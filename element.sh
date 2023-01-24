@@ -1,11 +1,51 @@
 #!/bin/bash
 
-PSQL="psql -X --username=freecodecamp --dbname=periodic_table tuples-only -c"
+PSQL="psql -X --username=freecodecamp --dbname=periodic_table --no-align --tuples-only -c"
+
 
 echo -e "\nPlease provide an element as an argument"
-read ELEMENT_NAME
-
-The element with atomic number 1 is Hydrogen (H). It's a nonmetal, with a mass of 1.008 amu. Hydrogen has a melting point of -259.1 celsius and a boiling point of -252.9 celsius.
+read INPUT
 
 
-I could not find that element in the database.
+if [[ $INPUT =~  ^[0-9]+$ ]]
+then
+ATOMIC_NUMBER=$($PSQL "SELECT atomic_number FROM elements WHERE atomic_number='$INPUT'")
+  if [[ -z $ATOMIC_NUMBER ]]
+  then
+     echo -e "\nI could not find that element in the database." 
+  else
+ echo $($PSQL " SELECT elements.atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius FROM elements FULL JOIN properties ON elements.atomic_number=properties.atomic_number FULL JOIN types ON types.type_id=properties.type_id WHERE elements.atomic_number=$INPUT") | while read ATOMIC_NUMBER BAR ELEMENT_NAME BAR ELEMENT_SYMBOL BAR ELEMENT_TYPE BAR ELEMENT_MASS BAR MELTING_POINT BAR BOILING_POINT 
+ do
+ echo -e "\nThe element with atomic number $ATOMIC_NUMBER is $ELEMENT_NAME ($ELEMENT_SYMBOL). It's a $ELEMENT_TYPE, with a mass of $ELEMENT_MASS amu. $ELEMENT_NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."
+done
+  fi
+# elif [[ ! $INPUT =~  ^[0-9]+$ ]]
+# then
+# INPUT_LENGTH=$(echo $INPUT | wc -c)
+#  if [[ $INPUT_LENGTH <= 3  ]]
+#  then
+#    ELEMENT_SYMBOL=$($PSQL "SELECT symbol FROM elements WHERE symbol='$INPUT'")
+#    if [[ -z $ELEMENT_SYMBOL ]]
+#    then
+#      echo -e "\nI could not find that element in the database."  
+#    else 
+#      echo $($PSQL " SELECT elements.atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius FROM elements FULL JOIN properties ON elements.atomic_number=properties.atomic_number FULL JOIN types ON types.type_id=properties.type_id WHERE elements.symbol='$INPUT'") | while read ATOMIC_NUMBER BAR ELEMENT_NAME BAR ELEMENT_SYMBOL BAR ELEMENT_TYPE BAR ELEMENT_MASS BAR MELTING_POINT BAR BOILING_POINT 
+#      do
+#      echo -e "\nThe element with atomic number $ATOMIC_NUMBER is $ELEMENT_NAME ($ELEMENT_SYMBOL). It's a $ELEMENT_TYPE, with a mass of $ELEMENT_MASS amu. $ELEMENT_NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."
+#      done
+#    fi
+#   else
+#   ELEMENT_NAME=$($PSQL "SELECT name FROM elements WHERE name='$INPUT'")
+#   if [[ -z $ELEMENT_NAME ]]
+#   then
+#      echo -e "\nI could not find that element in the database." 
+#   else
+#   echo $($PSQL " SELECT elements.atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius FROM elements FULL JOIN properties ON elements.atomic_number=properties.atomic_number FULL JOIN types ON types.type_id=properties.type_id WHERE elements.name='$INPUT'") | while read ATOMIC_NUMBER BAR ELEMENT_NAME BAR ELEMENT_SYMBOL BAR ELEMENT_TYPE BAR ELEMENT_MASS BAR MELTING_POINT BAR BOILING_POINT 
+#   do
+#   echo -e "\nThe element with atomic number $ATOMIC_NUMBER is $ELEMENT_NAME ($ELEMENT_SYMBOL). It's a $ELEMENT_TYPE, with a mass of $ELEMENT_MASS amu. $ELEMENT_NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."
+#   done
+#   fi   
+#  fi
+# else 
+# echo -e "\nI could not find that element in the database."
+fi
