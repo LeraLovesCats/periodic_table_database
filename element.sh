@@ -2,8 +2,7 @@
 
 PSQL="psql -X --username=freecodecamp --dbname=periodic_table --no-align --tuples-only -c"
 
-echo -e "\nPlease provide an element as an argument"
-read INPUT
+GET_ELEMENT(){
 
 if [[ $INPUT =~  ^[0-9]+$ ]]
 then
@@ -12,12 +11,10 @@ ATOMIC_NUMBER=$($PSQL "SELECT atomic_number FROM elements WHERE atomic_number='$
   then
      echo -e "\nI could not find that element in the database." 
   else
-  RESULT=$($PSQL "SELECT elements.atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius FROM elements FULL JOIN properties ON elements.atomic_number=properties.atomic_number FULL JOIN types ON types.type_id=properties.type_id WHERE elements.atomic_number='$INPUT'") 
-
-  echo "$RESULT" | while IFS="|" read ATOMIC_NUMBER ELEMENT_NAME ELEMENT_SYMBOL ELEMENT_TYPE ELEMENT_MASS MELTING_POINT BOILING_POINT
-    do
-    echo -e "\nThe element with atomic number $ATOMIC_NUMBER is $ELEMENT_NAME ($ELEMENT_SYMBOL). It's a $ELEMENT_TYPE, with a mass of $ELEMENT_MASS amu. $ELEMENT_NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."
-    done
+ echo $($PSQL "SELECT elements.atomic_number, name, symbol, type, atomic_mass, melting_point_celsius, boiling_point_celsius FROM elements FULL JOIN properties ON elements.atomic_number=properties.atomic_number FULL JOIN types ON types.type_id=properties.type_id WHERE elements.atomic_number=$INPUT") | while IFS="|" read ATOMIC_NUMBER ELEMENT_NAME ELEMENT_SYMBOL ELEMENT_TYPE ELEMENT_MASS MELTING_POINT BOILING_POINT 
+ do
+ echo -e "\nThe element with atomic number $ATOMIC_NUMBER is $ELEMENT_NAME ($ELEMENT_SYMBOL). It's a $ELEMENT_TYPE, with a mass of $ELEMENT_MASS amu. $ELEMENT_NAME has a melting point of $MELTING_POINT celsius and a boiling point of $BOILING_POINT celsius."
+done
   fi
 elif [[ ! $INPUT =~  ^[0-9]+$ ]]
 then
@@ -46,4 +43,13 @@ INPUT_LENGTH=$(echo $INPUT | wc -c)
   done
   fi   
  fi
+fi
+}
+
+if [[ -z $1 ]]
+then
+echo -e "\nPlease provide an element as an argument"
+else
+INPUT=$1
+GET_ELEMENT
 fi
